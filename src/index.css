@@ -1,0 +1,104 @@
+@import "tailwindcss";
+
+@theme {
+  --color-surface: #f8f9ff;
+  --color-surface-dim: #cbdbf5;
+  --color-surface-bright: #f8f9ff;
+  --color-surface-container-lowest: #ffffff;
+  --color-surface-container-low: #eff4ff;
+  --color-surface-container: #e5eeff;
+  --color-surface-container-high: #dce9ff;
+  --color-surface-container-highest: #d3e4fe;
+  --color-on-surface: #0b1c30;
+  --color-on-surface-variant: #3f4944;
+  --color-inverse-surface: #213145;
+  --color-inverse-on-surface: #eaf1ff;
+  --color-outline: #6f7974;
+  --color-outline-variant: #bfc9c2;
+  --color-surface-tint: #226a53;
+
+  --color-primary: #004331;
+  --color-on-primary: #ffffff;
+  --color-primary-container: #0d5c46;
+  --color-on-primary-container: #8cd2b6;
+  --color-inverse-primary: #8ed5b9;
+
+  --color-secondary: #775a19;
+  --color-on-secondary: #ffffff;
+  --color-secondary-container: #fed488;
+  --color-on-secondary-container: #785a1a;
+
+  --color-tertiary: #00432d;
+  --color-on-tertiary: #ffffff;
+  --color-tertiary-container: #005d3f;
+  --color-on-tertiary-container: #65d9a6;
+
+  --color-error: #ba1a1a;
+  --color-on-error: #ffffff;
+  --color-error-container: #ffdad6;
+  --color-on-error-container: #93000a;
+
+  --color-primary-fixed: #aaf1d4;
+  --color-primary-fixed-dim: #8ed5b9;
+  --color-on-primary-fixed: #002117;
+  --color-on-primary-fixed-variant: #00513d;
+
+  --color-secondary-fixed: #ffdea5;
+  --color-secondary-fixed-dim: #e9c176;
+  --color-on-secondary-fixed: #261900;
+  --color-on-secondary-fixed-variant: #5d4201;
+
+  --color-tertiary-fixed: #85f8c4;
+  --color-tertiary-fixed-dim: #68dba9;
+  --color-on-tertiary-fixed: #002114;
+  --color-on-tertiary-fixed-variant: #005137;
+
+  --font-sans: 'Noto Sans Arabic', 'Noto Sans', system-ui, -apple-system, sans-serif;
+  --font-serif: 'Noto Serif Arabic', 'Noto Serif', serif;
+  --font-quran: 'Amiri', 'Noto Serif Arabic', serif;
+}
+
+@layer base {
+  html, body {
+    margin: 0;
+    padding: 0;
+    font-family: var(--font-sans);
+  }
+  body {
+    overscroll-behavior: none;
+    direction: rtl;
+  }
+}
+
+/* Material Symbols font helper */
+.material-symbols-outlined {
+  font-family: 'Material Symbols Outlined';
+  font-weight: normal;
+  font-style: normal;
+  font-size: 24px;
+  line-height: 1;
+  letter-spacing: normal;
+  text-transform: none;
+  display: inline-block;
+  white-space: nowrap;
+  word-wrap: normal;
+  direction: ltr;
+  -webkit-font-feature-settings: 'liga';
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Custom scrollbars */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(111, 121, 116, 0.25);
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(111, 121, 116, 0.45);
+}

@@ -1,0 +1,6 @@
+{
+  "name": "تاج الوقار - منصة حلقات الحافظات",
+  "description": "منصة متكاملة ومتقدمة لإدارة حلقات تحفيظ القرآن الكريم والإشراف الميداني ورصد الحفظ والمراجعة وتقييم التجويد",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
