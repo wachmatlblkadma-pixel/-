@@ -1,5 +1,6 @@
 import React from 'react';
-import { SUPERVISOR_INFO, STATS_SUMMARY } from '../data/mockData';
+import { SUPERVISOR_INFO } from '../data/mockData';
+import { useAuth } from '../context/AuthContext';
 
 interface SidebarProps {
   currentTab: string;
@@ -14,38 +15,79 @@ export const Sidebar: React.FC<SidebarProps> = ({
   isOpenMobile,
   onCloseMobile,
 }) => {
-  const navItems = [
-    {
-      id: 'supervisor-dashboard',
-      label: 'لوحة تحكم المشرفة',
-      icon: 'grid_view',
-    },
-    {
-      id: 'daily-tracking-and-evaluation',
-      label: 'سجل التقييم والتقدم اليومي',
-      icon: 'menu_book',
-    },
-    {
-      id: 'monthly-schedule',
-      label: 'جدول وخطة الشهر',
-      icon: 'calendar_month',
-    },
-    {
-      id: 'student-view-only-portal',
-      label: 'بوابة استعراض الحافظة',
-      icon: 'school',
-    },
-    {
-      id: 'reports',
-      label: 'التقارير والإحصائيات',
-      icon: 'analytics',
-    },
-    {
-      id: 'settings',
-      label: 'إعدادات الحلقة والتنبيهات',
-      icon: 'settings',
-    },
-  ];
+  const { role, profile, signOut } = useAuth();
+
+  // Navigation tailored by role
+  let navItems: { id: string; label: string; icon: string }[] = [];
+
+  if (role === 'admin') {
+    navItems = [
+      {
+        id: 'admin-dashboard',
+        label: 'لوحة تحكم المديرة والمجموعات',
+        icon: 'admin_panel_settings',
+      },
+      {
+        id: 'supervisor-workspace',
+        label: 'مساحة متابعة الحلقات',
+        icon: 'menu_book',
+      },
+      {
+        id: 'reports',
+        label: 'التقارير والإحصائيات',
+        icon: 'analytics',
+      },
+      {
+        id: 'settings',
+        label: 'إعدادات النظام والتنبيهات',
+        icon: 'settings',
+      },
+    ];
+  } else if (role === 'supervisor') {
+    navItems = [
+      {
+        id: 'supervisor-workspace',
+        label: 'سجل رصد الحلقة والحافظات',
+        icon: 'menu_book',
+      },
+      {
+        id: 'monthly-schedule',
+        label: 'جدول وخطة الشهر',
+        icon: 'calendar_month',
+      },
+      {
+        id: 'reports',
+        label: 'إحصائيات الحلقة',
+        icon: 'analytics',
+      },
+      {
+        id: 'settings',
+        label: 'إعدادات الحلقة',
+        icon: 'settings',
+      },
+    ];
+  } else {
+    // student
+    navItems = [
+      {
+        id: 'student-portal',
+        label: 'مساري وسجل حفظي (عرض فقط)',
+        icon: 'school',
+      },
+      {
+        id: 'monthly-schedule',
+        label: 'خطة الشهر ومقرر الحفظ',
+        icon: 'calendar_month',
+      },
+    ];
+  }
+
+  const roleLabel =
+    role === 'admin'
+      ? 'مديرة النظام'
+      : role === 'supervisor'
+      ? 'مشرفة حلقة'
+      : 'حافظة';
 
   return (
     <>
@@ -71,7 +113,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
               className="h-10 w-10 object-contain rounded-xl shadow-xs"
               src={SUPERVISOR_INFO.institutionLogo}
             />
-            <div className="flex flex-col">
+            <div className="flex flex-col text-right">
               <span className="font-serif text-lg text-[#004331] font-bold tracking-tight">
                 تاج الوقار
               </span>
@@ -98,7 +140,9 @@ export const Sidebar: React.FC<SidebarProps> = ({
               </span>
               نظام التحفيظ المعتمد
             </span>
-            <span className="w-2 h-2 rounded-full bg-[#775a19]"></span>
+            <span className="text-[10px] bg-white px-2 py-0.5 rounded-full font-bold">
+              {roleLabel}
+            </span>
           </div>
         </div>
 
@@ -126,32 +170,35 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 >
                   {item.icon}
                 </span>
-                <span className="text-sm">{item.label}</span>
+                <span className="text-xs sm:text-sm">{item.label}</span>
               </button>
             );
           })}
         </nav>
 
-        {/* Monthly Completion Progress Card */}
-        <div className="p-4 m-3 rounded-2xl bg-[#eff4ff] border border-[#dce9ff]">
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-xs text-[#3f4944] font-medium">
-              إنجاز الختمات الشهري
-            </span>
-            <span className="text-xs text-[#004331] font-bold">
-              {STATS_SUMMARY.monthlyPercentage}%
-            </span>
+        {/* Profile Card & Logout at Bottom */}
+        <div className="p-3 m-3 rounded-2xl bg-[#eff4ff] border border-[#dce9ff] space-y-2">
+          <div className="flex items-center gap-2.5">
+            <div className="w-9 h-9 rounded-full bg-[#004331] text-white flex items-center justify-center font-bold text-xs shrink-0">
+              {profile?.name ? profile.name.charAt(0) : 'م'}
+            </div>
+            <div className="flex flex-col text-right overflow-hidden">
+              <span className="font-bold text-xs text-[#0b1c30] truncate">
+                {profile?.name || 'مستخدمة مسجلة'}
+              </span>
+              <span className="text-[10px] text-[#775a19] font-semibold truncate">
+                {profile?.group_name ? `حلقة ${profile.group_name}` : roleLabel}
+              </span>
+            </div>
           </div>
-          <div className="w-full h-2 bg-[#dce9ff] rounded-full overflow-hidden">
-            <div
-              className="h-full bg-[#0d5c46] rounded-full transition-all duration-500"
-              style={{ width: `${STATS_SUMMARY.monthlyPercentage}%` }}
-            ></div>
-          </div>
-          <div className="flex justify-between items-center mt-2 text-[11px] text-[#3f4944]">
-            <span>تم إنجاز {STATS_SUMMARY.monthlyAchievedPages} وجه</span>
-            <span>المستهدف: {STATS_SUMMARY.monthlyHifdhTargetPages}</span>
-          </div>
+
+          <button
+            onClick={signOut}
+            className="w-full py-2 rounded-xl bg-white hover:bg-[#ffdad6] text-[#ba1a1a] text-xs font-bold flex items-center justify-center gap-1.5 border border-[#bfc9c2]/30 transition-colors cursor-pointer"
+          >
+            <span className="material-symbols-outlined text-[16px]">logout</span>
+            تسجيل الخروج
+          </button>
         </div>
       </aside>
     </>

@@ -1,42 +1,24 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { AuthProvider, useAuth } from './context/AuthContext';
 import { Sidebar } from './components/Sidebar';
 import { Header } from './components/Header';
-import { DetailedEvaluationModal } from './components/DetailedEvaluationModal';
-import { QuickEvaluationDrawer } from './components/QuickEvaluationDrawer';
-import { WhatsAppPreviewModal } from './components/WhatsAppPreviewModal';
-import { NotificationsModal } from './components/NotificationsModal';
 import { Toast } from './components/Toast';
+import { NotificationsModal } from './components/NotificationsModal';
 
-import { DailyTrackingView } from './views/DailyTrackingView';
-import { SupervisorDashboardView } from './views/SupervisorDashboardView';
+import { AuthView } from './views/AuthView';
+import { AdminDashboardView } from './views/AdminDashboardView';
+import { SupervisorView } from './views/SupervisorView';
+import { StudentView } from './views/StudentView';
 import { MonthlyScheduleView } from './views/MonthlyScheduleView';
-import { StudentPortalView } from './views/StudentPortalView';
 import { ReportsView } from './views/ReportsView';
 import { SettingsView } from './views/SettingsView';
-
 import { INITIAL_STUDENTS } from './data/mockData';
-import { StudentEvaluation } from './types';
 
-export default function App() {
-  const [currentTab, setCurrentTab] = useState<string>(
-    'daily-tracking-and-evaluation'
-  );
-  const [students, setStudents] = useState<StudentEvaluation[]>(INITIAL_STUDENTS);
-  const [activeCircleId, setActiveCircleId] = useState<string>('alfirdous');
-  const [searchQuery, setSearchQuery] = useState<string>('');
+function AppContent() {
+  const { user, role, loading } = useAuth();
+  const [currentTab, setCurrentTab] = useState<string>('supervisor-workspace');
   const [mobileMenuOpen, setMobileMenuOpen] = useState<boolean>(false);
-
-  // Modals & Drawers state
-  const [detailedModalStudent, setDetailedModalStudent] =
-    useState<StudentEvaluation | null>(null);
-  const [drawerStudent, setDrawerStudent] = useState<StudentEvaluation | null>(
-    null
-  );
-  const [whatsappStudent, setWhatsappStudent] =
-    useState<StudentEvaluation | null>(null);
   const [showNotifications, setShowNotifications] = useState<boolean>(false);
-
-  // Toast state
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
   const showToast = (message: string) => {
@@ -46,61 +28,37 @@ export default function App() {
     }, 3500);
   };
 
-  const handleUpdateStudent = (updatedStudent: StudentEvaluation) => {
-    setStudents((prev) =>
-      prev.map((s) =>
-        s.studentId === updatedStudent.studentId ? updatedStudent : s
-      )
-    );
-  };
-
-  const handleSaveFromModal = (
-    updatedStudent: StudentEvaluation,
-    isDraft: boolean
-  ) => {
-    handleUpdateStudent(updatedStudent);
-    setDetailedModalStudent(null);
-    if (isDraft) {
-      showToast(`تم حفظ مسودة تقييم الحافظة: ${updatedStudent.studentName}`);
-    } else {
-      showToast(
-        `تم اعتماد ورصد التقييم النهائي للحافظة: ${updatedStudent.studentName} بنجاح`
-      );
-      if (updatedStudent.sendWhatsAppNotice) {
-        setTimeout(() => {
-          showToast(`تم إرسال إشعار التقييم لولي الأمر عبر واتساب`);
-        }, 1200);
-      }
+  // Route user according to role when role loads or changes
+  useEffect(() => {
+    if (role === 'admin') {
+      setCurrentTab('admin-dashboard');
+    } else if (role === 'supervisor') {
+      setCurrentTab('supervisor-workspace');
+    } else if (role === 'student') {
+      setCurrentTab('student-portal');
     }
-  };
+  }, [role]);
 
-  const handleSaveFromDrawer = (updatedStudent: StudentEvaluation) => {
-    handleUpdateStudent(updatedStudent);
-    setDrawerStudent(null);
-    showToast(`تم تحديث وحفظ سجل الحافظة: ${updatedStudent.studentName}`);
-  };
-
-  const handleMarkAllPresent = () => {
-    setStudents((prev) =>
-      prev.map((s) => ({
-        ...s,
-        attendance: 'present',
-        attendanceTime: '٠٥:٣٠ ص',
-      }))
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-[#f8f9ff] flex flex-col items-center justify-center p-4" dir="rtl">
+        <div className="w-12 h-12 border-4 border-[#004331] border-t-transparent rounded-full animate-spin mb-4"></div>
+        <span className="font-serif text-lg font-bold text-[#004331]">
+          تاج الوقار • جاري تحميل النظام والتحقق من الصلاحيات...
+        </span>
+      </div>
     );
-    showToast('تم رصد الحضور لجميع الحافظات في الجلسة الميدانية');
-  };
+  }
 
-  const handleSaveEntireSession = () => {
-    setStudents((prev) =>
-      prev.map((s) => ({
-        ...s,
-        isEvaluatedToday: true,
-        lastUpdated: 'تم الاعتماد',
-      }))
+  // Not logged in -> Show Authentication View
+  if (!user) {
+    return (
+      <>
+        <AuthView onShowToast={showToast} />
+        <Toast message={toastMessage} onClose={() => setToastMessage(null)} />
+      </>
     );
-    showToast('تم اعتماد وحفظ جميع درجات وتقييمات حلقة الفردوس بنجاح');
-  };
+  }
 
   return (
     <div
@@ -115,90 +73,47 @@ export default function App() {
         onCloseMobile={() => setMobileMenuOpen(false)}
       />
 
-      {/* Main Content Area (padded 72 on desktop for fixed right sidebar) */}
+      {/* Main Content Area */}
       <div className="lg:pr-72 min-h-screen flex flex-col">
         {/* Top Header Bar */}
         <Header
-          activeCircleId={activeCircleId}
-          onCircleChange={setActiveCircleId}
-          searchQuery={searchQuery}
-          onSearchChange={setSearchQuery}
           onToggleMobileMenu={() => setMobileMenuOpen(true)}
           onOpenNotifications={() => setShowNotifications(true)}
         />
 
         {/* Viewport Content */}
         <main className="relative pt-24 px-4 sm:px-6 md:px-8 w-full flex-1 max-w-[1550px] mx-auto">
-          {currentTab === 'daily-tracking-and-evaluation' && (
-            <DailyTrackingView
-              students={students}
-              onUpdateStudent={handleUpdateStudent}
-              onOpenDetailedModal={(s) => setDetailedModalStudent(s)}
-              onOpenQuickDrawer={(s) => setDrawerStudent(s)}
-              onShowToast={showToast}
-              onMarkAllPresent={handleMarkAllPresent}
-              onSaveEntireSession={handleSaveEntireSession}
-            />
+          {/* Admin Dashboard */}
+          {currentTab === 'admin-dashboard' && (
+            <AdminDashboardView onShowToast={showToast} />
           )}
 
-          {currentTab === 'supervisor-dashboard' && (
-            <SupervisorDashboardView
-              students={students}
-              onOpenDetailedModal={(s) => setDetailedModalStudent(s)}
-              onNavigateToTracking={() =>
-                setCurrentTab('daily-tracking-and-evaluation')
-              }
-              onShowToast={showToast}
-            />
+          {/* Supervisor Workspace */}
+          {currentTab === 'supervisor-workspace' && (
+            <SupervisorView onShowToast={showToast} />
           )}
 
+          {/* Student View Only Portal */}
+          {currentTab === 'student-portal' && (
+            <StudentView onShowToast={showToast} />
+          )}
+
+          {/* Monthly Schedule Plan */}
           {currentTab === 'monthly-schedule' && (
             <MonthlyScheduleView onShowToast={showToast} />
           )}
 
-          {currentTab === 'student-view-only-portal' && (
-            <StudentPortalView students={students} onShowToast={showToast} />
-          )}
-
+          {/* Reports & Analytics */}
           {currentTab === 'reports' && (
-            <ReportsView students={students} onShowToast={showToast} />
+            <ReportsView students={INITIAL_STUDENTS} onShowToast={showToast} />
           )}
 
+          {/* Settings */}
           {currentTab === 'settings' && (
             <SettingsView onShowToast={showToast} />
           )}
         </main>
       </div>
-
-      {/* Modals & Overlays */}
-      {detailedModalStudent && (
-        <DetailedEvaluationModal
-          student={detailedModalStudent}
-          onClose={() => setDetailedModalStudent(null)}
-          onSave={handleSaveFromModal}
-          onOpenWhatsAppPreview={(s) => setWhatsappStudent(s)}
-        />
-      )}
-
-      {drawerStudent && (
-        <QuickEvaluationDrawer
-          student={drawerStudent}
-          onClose={() => setDrawerStudent(null)}
-          onSave={handleSaveFromDrawer}
-        />
-      )}
-
-      {whatsappStudent && (
-        <WhatsAppPreviewModal
-          student={whatsappStudent}
-          onClose={() => setWhatsappStudent(null)}
-          onConfirmSend={() =>
-            showToast(
-              `تم إرسال إشعار التقييم بنجاح إلى ولي أمر: ${whatsappStudent.studentName}`
-            )
-          }
-        />
-      )}
 
       {showNotifications && (
         <NotificationsModal onClose={() => setShowNotifications(false)} />
@@ -207,5 +122,13 @@ export default function App() {
       {/* Global Toast */}
       <Toast message={toastMessage} onClose={() => setToastMessage(null)} />
     </div>
+  );
+}
+
+export default function App() {
+  return (
+    <AuthProvider>
+      <AppContent />
+    </AuthProvider>
   );
 }
